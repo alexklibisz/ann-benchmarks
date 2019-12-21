@@ -1,0 +1,20 @@
+FROM ann-benchmarks
+
+# Install elasticsearch.
+ENV DEBIAN_FRONTEND noninteractive
+RUN apt install -y wget curl
+RUN wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-oss-7.4.0-amd64.deb \
+    && dpkg -i elasticsearch-oss-7.4.0-amd64.deb \
+    && rm elasticsearch-oss-7.4.0-amd64.deb
+
+ENV PATH="/usr/share/elasticsearch/bin:$PATH"
+
+WORKDIR /home/app
+
+# Install plugin.
+COPY elastiknn.zip .
+RUN elasticsearch-plugin install -b file:/home/app/elastiknn.zip
+
+COPY install/entrypoint.elastiknn.sh .
+RUN chmod +x /home/app/entrypoint.elastiknn.sh
+ENTRYPOINT ["./entrypoint.elastiknn.sh"]
