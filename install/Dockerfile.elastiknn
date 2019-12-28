@@ -1,20 +1,25 @@
 FROM ann-benchmarks
 
+WORKDIR /home/app
+
 # Install elasticsearch.
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt install -y wget curl
-RUN wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-oss-7.4.0-amd64.deb \
+RUN wget --quiet https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-oss-7.4.0-amd64.deb \
     && dpkg -i elasticsearch-oss-7.4.0-amd64.deb \
     && rm elasticsearch-oss-7.4.0-amd64.deb
 
+# Put ES on the path.
 ENV PATH="/usr/share/elasticsearch/bin:$PATH"
 
-WORKDIR /home/app
-
 # Install plugin.
-COPY elastiknn.zip .
-RUN elasticsearch-plugin install -b file:/home/app/elastiknn.zip
+RUN elasticsearch-plugin install https://com-klibisz-elastiknn-builds.s3.amazonaws.com/elastiknn-0.0.0-SNAPSHOT_es7.4.0.zip
 
-COPY install/entrypoint.elastiknn.sh .
-RUN chmod +x /home/app/entrypoint.elastiknn.sh
-ENTRYPOINT ["./entrypoint.elastiknn.sh"]
+# Install python client.
+RUN python3 -m pip install https://com-klibisz-elastiknn-builds.s3.amazonaws.com/elastiknn_client-0.0.0-py3-none-any.whl
+
+# Setup entrypoint.
+# COPY install/entrypoint.elastiknn.sh .
+# RUN chmod +x /home/app/entrypoint.elastiknn.sh
+# ENTRYPOINT ["./entrypoint.elastiknn.sh"]
+# ENTRYPOINT ["python3", "run_algorithm.py"]
