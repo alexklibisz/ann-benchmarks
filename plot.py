@@ -4,6 +4,7 @@ mpl.use('Agg')  # noqa
 import matplotlib.pyplot as plt
 import numpy as np
 import argparse
+import pdb
 
 from ann_benchmarks.datasets import get_dataset
 from ann_benchmarks.algorithms.definitions import get_definitions
