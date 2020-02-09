@@ -502,6 +502,14 @@ float:
             - {"n_neighbors": [120], "diversify_epsilon": [0.0, 1.0],
                "pruning_degree_multiplier":[2.0, 2.5], leaf_size: 80}
           query-args: [[0.08, 0.16, 0.20, 0.24, 0.28, 0.32, 0.36]]
+    elastiknn-exact:
+      docker-tag: ann-benchmarks-elastiknn
+      module: ann_benchmarks.algorithms.elastiknn
+      constructor: ElastiKnnExact
+      base-args: ["@metric"]
+      run-groups:
+        base:
+          args: [[1], [true]]
 bit:
   hamming:
     mih:

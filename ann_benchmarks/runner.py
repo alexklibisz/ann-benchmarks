@@ -1,24 +1,20 @@
 import argparse
-import datetime
-import colors
-import docker
 import json
 import multiprocessing
-import numpy
 import os
-import psutil
-import requests
 import sys
 import threading
 import time
 
-import pdb
+import colors
+import docker
+import numpy
+import psutil
 
-
-from ann_benchmarks.datasets import get_dataset, DATASETS
 from ann_benchmarks.algorithms.definitions import (Definition,
                                                    instantiate_algorithm,
                                                    get_algorithm_name)
+from ann_benchmarks.datasets import get_dataset, DATASETS
 from ann_benchmarks.distance import metrics, dataset_transform
 from ann_benchmarks.results import store_results
 
@@ -78,7 +74,6 @@ def run_individual_query(algo, X_train, X_test, distance, count, run_count,
         if batch:
             results = batch_query(X_test)
         else:
-            import pdb; pdb.set_trace()
             t0 = time.time()
             results = [single_query(x) for x in X_test]
             print("Total time for %d queries = %.2f" % (len(results), time.time() - t0))
