@@ -240,7 +240,8 @@ def run_docker(definition, dataset, count, runs, timeout, batch,
         },
         cpuset_cpus=cpu_limit,
         mem_limit=mem_limit,
-        detach=True)
+        detach=True,
+        ports={ 8097: 8097 })
 
     def stream_logs():
         for line in container.logs(stream=True):
