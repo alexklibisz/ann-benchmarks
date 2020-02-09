@@ -13,13 +13,7 @@ RUN wget --quiet https://artifacts.elastic.co/downloads/elasticsearch/elasticsea
 ENV PATH="/usr/share/elasticsearch/bin:$PATH"
 
 # Install plugin.
-RUN elasticsearch-plugin install https://com-klibisz-elastiknn-builds.s3.amazonaws.com/elastiknn-0.0.0-SNAPSHOT_es7.4.0.zip
+RUN elasticsearch-plugin install https://github.com/alexklibisz/elastiknn/releases/download/0.1.0-PRE3/elastiknn-0.1.0-PRE3_es7.4.0.zip
 
 # Install python client.
-RUN python3 -m pip install https://com-klibisz-elastiknn-builds.s3.amazonaws.com/elastiknn_client-0.0.0-py3-none-any.whl
-
-# Setup entrypoint.
-# COPY install/entrypoint.elastiknn.sh .
-# RUN chmod +x /home/app/entrypoint.elastiknn.sh
-# ENTRYPOINT ["./entrypoint.elastiknn.sh"]
-# ENTRYPOINT ["python3", "run_algorithm.py"]
+RUN python3 -m pip install elastiknn-client==0.1.0rc3
