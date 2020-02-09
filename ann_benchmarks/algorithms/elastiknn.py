@@ -13,6 +13,8 @@ class ElastiKnnExact(BaseANN):
         self.batch_res = None
         self._dim = None
 
+        print(f"Running {self.name} with metric {metric} and {n_shards} shards")
+
         if start_es:
             from subprocess import run
             if run("curl localhost:9200", shell=True).returncode != 0:

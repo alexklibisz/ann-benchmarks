@@ -14,6 +14,8 @@ import sys
 import threading
 import time
 
+import pdb
+
 
 def print(*args, **kwargs):  # noqa
     __true_print(*args, **kwargs)
@@ -51,6 +53,8 @@ def run_individual_query(algo, X_train, X_test, distance, count, run_count,
                 start = time.time()
                 candidates = algo.query(v, count)
                 total = (time.time() - start)
+                print("%.3f" % total)
+
             candidates = [(int(idx), float(metrics[distance]['distance'](v, X_train[idx])))  # noqa
                           for idx in candidates]
             n_items_processed[0] += 1
@@ -81,7 +85,10 @@ def run_individual_query(algo, X_train, X_test, distance, count, run_count,
         if batch:
             results = batch_query(X_test)
         else:
+            import pdb; pdb.set_trace()
+            t0 = time.time()
             results = [single_query(x) for x in X_test]
+            print("Total time for %d queries = %.2f" % (len(results), time.time() - t0))
 
         total_time = sum(time for time, _ in results)
         total_candidates = sum(len(candidates) for _, candidates in results)
