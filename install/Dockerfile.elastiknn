@@ -20,13 +20,13 @@ RUN echo "thread_pool.write.queue_size: 1" >> /etc/elasticsearch/elasticsearch.y
 RUN echo "ES_JAVA_OPTS=\"-Xmx4g\"" >> /etc/default/elasticsearch
 
 # Settings for JMX/VisualVM profiling.
-RUN echo "-Dcom.sun.management.jmxremote.ssl=false"          >> /etc/elasticsearch/jvm.options
-RUN echo "-Dcom.sun.management.jmxremote.authenticate=false" >> /etc/elasticsearch/jvm.options
-RUN echo "-Dcom.sun.management.jmxremote.local.only=false"   >> /etc/elasticsearch/jvm.options
-RUN echo "-Dcom.sun.management.jmxremote.port=8097"          >> /etc/elasticsearch/jvm.options
-RUN echo "-Dcom.sun.management.jmxremote.rmi.port=8097"      >> /etc/elasticsearch/jvm.options
-RUN echo "-Djava.rmi.server.hostname=localhost"              >> /etc/elasticsearch/jvm.options
-EXPOSE 8097
+# RUN echo "-Dcom.sun.management.jmxremote.ssl=false"          >> /etc/elasticsearch/jvm.options
+# RUN echo "-Dcom.sun.management.jmxremote.authenticate=false" >> /etc/elasticsearch/jvm.options
+# RUN echo "-Dcom.sun.management.jmxremote.local.only=false"   >> /etc/elasticsearch/jvm.options
+# RUN echo "-Dcom.sun.management.jmxremote.port=8097"          >> /etc/elasticsearch/jvm.options
+# RUN echo "-Dcom.sun.management.jmxremote.rmi.port=8097"      >> /etc/elasticsearch/jvm.options
+# RUN echo "-Djava.rmi.server.hostname=localhost"              >> /etc/elasticsearch/jvm.options
+# EXPOSE 8097
 
 # RUN rm /etc/elasticsearch/jvm.options
 # RUN echo "-Xms4g" 																										  >> /etc/elasticsearch/jvm.options
@@ -59,7 +59,8 @@ EXPOSE 8097
 
 
 # Install plugin.
-RUN elasticsearch-plugin install https://github.com/alexklibisz/elastiknn/releases/download/0.1.0-PRE3/elastiknn-0.1.0-PRE3_es7.4.0.zip
+# RUN elasticsearch-plugin install https://github.com/alexklibisz/elastiknn/releases/download/0.1.0-PRE3/elastiknn-0.1.0-PRE3_es7.4.0.zip
+RUN elasticsearch-plugin install https://github.com/alexklibisz/elastiknn/releases/download/0.1.0-PRE3-PR34-SNAPSHOT/elastiknn-0.1.0-PRE3-PR34-SNAPSHOT_es7.4.0.zip
 
 # Install python client.
-RUN python3 -m pip install elastiknn-client==0.1.0rc3
+RUN python3 -m pip install --upgrade elastiknn-client==0.1.0rc3.dev191
