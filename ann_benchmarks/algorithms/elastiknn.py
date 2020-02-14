@@ -67,10 +67,10 @@ class ElastiKnnLsh(BaseANN):
     def query(self, q, n):
         if self._model._sim == SIMILARITY_JACCARD:
             q = SparseBoolVector(total_indices=self._dim, true_indices=q)
-        return self._model.kneighbors([q], n_neighbors=n, return_distance=False)[0]
+        return self._model.kneighbors([q], n_neighbors=n, return_distance=False, use_cache=True)[0]
 
     def batch_query(self, X, n):
-        self.batch_res = self._model.kneighbors(X, n_neighbors=n, return_distance=False)
+        self.batch_res = self._model.kneighbors(X, n_neighbors=n, return_distance=False, use_cache=True)
 
     def get_batch_results(self):
         return self.batch_res

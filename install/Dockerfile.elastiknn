@@ -13,10 +13,10 @@ RUN wget --quiet https://artifacts.elastic.co/downloads/elasticsearch/elasticsea
 ENV PATH="/usr/share/elasticsearch/bin:$PATH"
 
 # Add configurations optimized for benchmarking.
-RUN echo "thread_pool.search.size: 2" >> /etc/elasticsearch/elasticsearch.yml
-RUN echo "thread_pool.search.queue_size: 1" >> /etc/elasticsearch/elasticsearch.yml
-RUN echo "thread_pool.write.size: 2" >> /etc/elasticsearch/elasticsearch.yml
-RUN echo "thread_pool.write.queue_size: 1" >> /etc/elasticsearch/elasticsearch.yml
+RUN echo "thread_pool.search.size: 1" >> /etc/elasticsearch/elasticsearch.yml
+RUN echo "thread_pool.search.queue_size: 5" >> /etc/elasticsearch/elasticsearch.yml
+RUN echo "thread_pool.write.size: 1" >> /etc/elasticsearch/elasticsearch.yml
+RUN echo "thread_pool.write.queue_size: 5" >> /etc/elasticsearch/elasticsearch.yml
 RUN echo "ES_JAVA_OPTS=\"-Xmx4g\"" >> /etc/default/elasticsearch
 
 # Settings for JMX/VisualVM profiling.
@@ -59,8 +59,7 @@ RUN echo "ES_JAVA_OPTS=\"-Xmx4g\"" >> /etc/default/elasticsearch
 
 
 # Install plugin.
-# RUN elasticsearch-plugin install https://github.com/alexklibisz/elastiknn/releases/download/0.1.0-PRE3/elastiknn-0.1.0-PRE3_es7.4.0.zip
-RUN elasticsearch-plugin install https://github.com/alexklibisz/elastiknn/releases/download/0.1.0-PRE3-PR34-SNAPSHOT/elastiknn-0.1.0-PRE3-PR34-SNAPSHOT_es7.4.0.zip
+# RUN elasticsearch-plugin install https://github.com/alexklibisz/elastiknn/releases/download/0.1.0-PRE4/elastiknn-0.1.0-PRE4_es7.4.0.zip
 
 # Install python client.
-RUN python3 -m pip install --upgrade elastiknn-client==0.1.0rc3.dev191
+RUN python3 -m pip install --upgrade elastiknn-client==0.1.0rc4
