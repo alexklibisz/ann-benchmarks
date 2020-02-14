@@ -59,7 +59,7 @@ RUN echo "ES_JAVA_OPTS=\"-Xmx4g\"" >> /etc/default/elasticsearch
 
 
 # Install plugin.
-# RUN elasticsearch-plugin install https://github.com/alexklibisz/elastiknn/releases/download/0.1.0-PRE4/elastiknn-0.1.0-PRE4_es7.4.0.zip
+RUN elasticsearch-plugin install https://github.com/alexklibisz/elastiknn/releases/download/0.1.0-PRE4/elastiknn-0.1.0-PRE4_es7.4.0.zip
 
 # Install python client.
 RUN python3 -m pip install --upgrade elastiknn-client==0.1.0rc4
