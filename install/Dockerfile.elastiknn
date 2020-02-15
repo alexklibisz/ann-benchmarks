@@ -16,7 +16,7 @@ ENV PATH="/usr/share/elasticsearch/bin:$PATH"
 # switching/managing threads. This leads to some very minor performance improvements.
 RUN echo "thread_pool.search.size: 1" >> /etc/elasticsearch/elasticsearch.yml
 RUN echo "thread_pool.write.size: 1" >> /etc/elasticsearch/elasticsearch.yml
-RUN echo "ES_JAVA_OPTS=\"-Xms200m -Xmx800m\"" >> /etc/default/elasticsearch
+RUN echo "ES_JAVA_OPTS=\"-Xmx4g\"" >> /etc/default/elasticsearch
 
 # Settings for JMX/VisualVM profiling. You also have to map the port when running the container.
 RUN echo "-Dcom.sun.management.jmxremote.ssl=false"          >> /etc/elasticsearch/jvm.options
@@ -28,7 +28,7 @@ RUN echo "-Djava.rmi.server.hostname=localhost"              >> /etc/elasticsear
 EXPOSE 8099
 
 # Install plugin.
-RUN elasticsearch-plugin install https://github.com/alexklibisz/elastiknn/releases/download/0.1.0-PRE6/elastiknn-0.1.0-PRE6_es7.4.0.zip
+RUN elasticsearch-plugin install https://github.com/alexklibisz/elastiknn/releases/download/0.1.0-PRE7/elastiknn-0.1.0-PRE7_es7.4.0.zip
 
 # Install python client.
 RUN python3 -m pip install --upgrade elastiknn-client==0.1.0rc4

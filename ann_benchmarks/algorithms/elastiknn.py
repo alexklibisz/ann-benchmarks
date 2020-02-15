@@ -47,7 +47,7 @@ class ElastiKnnLsh(BaseANN):
                  start_es: bool = False):
         self._model = ElastiKnnModel(algorithm='lsh', metric=metric,
                                      algorithm_params=dict(num_tables=num_tables, num_bands=num_bands, num_rows=num_rows))
-        self.name = 'elastiknn-exact'
+        self.name = 'elastiknn-lsh'
         self.num_shards = num_shards
         self.batch_res = None
         self.use_cache = use_cache

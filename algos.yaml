@@ -627,15 +627,15 @@ bit:
         base:
           args: [
             # Number of shards.
-            [1],
+            [14],
             # Number of tables.
-            [2, 4, 8, 16, 32],
+            [10, 20, 40],
             # Bands per table.
-            [8, 16, 32, 64],
+            [10, 20],
             # Rows per band.
-            [1, 2, 4, 8, 16],
+            [1, 2, 3],
             # Use cache.
-            [true, false],
+            [true],
             [true]
           ]
     bf:
