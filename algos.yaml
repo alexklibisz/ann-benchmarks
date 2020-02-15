@@ -617,7 +617,7 @@ bit:
       base-args: ["@metric"]
       run-groups:
         base:
-          args: [[1], [true, false], [true]]
+          args: [[1], [true], [true]]
     elastiknn-lsh:
       docker-tag: ann-benchmarks-elastiknn
       module: ann_benchmarks.algorithms.elastiknn

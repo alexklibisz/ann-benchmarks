@@ -42,7 +42,6 @@ def run_individual_query(algo, X_train, X_test, distance, count, run_count,
                 start = time.time()
                 candidates = algo.query(v, count)
                 total = (time.time() - start)
-                print("%.3f" % total)
 
             candidates = [(int(idx), float(metrics[distance]['distance'](v, X_train[idx])))  # noqa
                           for idx in candidates]
@@ -241,7 +240,7 @@ def run_docker(definition, dataset, count, runs, timeout, batch,
         cpuset_cpus=cpu_limit,
         mem_limit=mem_limit,
         detach=True,
-        ports={ 8097: 8097 })
+        ports={ 8099: 8099 })
 
     def stream_logs():
         for line in container.logs(stream=True):

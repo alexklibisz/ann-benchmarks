@@ -12,54 +12,23 @@ RUN wget --quiet https://artifacts.elastic.co/downloads/elasticsearch/elasticsea
 # Put ES on the path.
 ENV PATH="/usr/share/elasticsearch/bin:$PATH"
 
-# Add configurations optimized for benchmarking.
+# Add configurations optimized for benchmarking. Setting write and search thread pools to size 1 to negate overhead from
+# switching/managing threads. This leads to some very minor performance improvements.
 RUN echo "thread_pool.search.size: 1" >> /etc/elasticsearch/elasticsearch.yml
-RUN echo "thread_pool.search.queue_size: 5" >> /etc/elasticsearch/elasticsearch.yml
 RUN echo "thread_pool.write.size: 1" >> /etc/elasticsearch/elasticsearch.yml
-RUN echo "thread_pool.write.queue_size: 5" >> /etc/elasticsearch/elasticsearch.yml
-RUN echo "ES_JAVA_OPTS=\"-Xmx4g\"" >> /etc/default/elasticsearch
+RUN echo "ES_JAVA_OPTS=\"-Xms200m -Xmx800m\"" >> /etc/default/elasticsearch
 
-# Settings for JMX/VisualVM profiling.
-# RUN echo "-Dcom.sun.management.jmxremote.ssl=false"          >> /etc/elasticsearch/jvm.options
-# RUN echo "-Dcom.sun.management.jmxremote.authenticate=false" >> /etc/elasticsearch/jvm.options
-# RUN echo "-Dcom.sun.management.jmxremote.local.only=false"   >> /etc/elasticsearch/jvm.options
-# RUN echo "-Dcom.sun.management.jmxremote.port=8097"          >> /etc/elasticsearch/jvm.options
-# RUN echo "-Dcom.sun.management.jmxremote.rmi.port=8097"      >> /etc/elasticsearch/jvm.options
-# RUN echo "-Djava.rmi.server.hostname=localhost"              >> /etc/elasticsearch/jvm.options
-# EXPOSE 8097
-
-# RUN rm /etc/elasticsearch/jvm.options
-# RUN echo "-Xms4g" 																										  >> /etc/elasticsearch/jvm.options
-# RUN echo "-Xmx4g" 																										  >> /etc/elasticsearch/jvm.options
-# # RUN echo "-XX:+UnlockExperimentalVMOptions" 																			  >> /etc/elasticsearch/jvm.options
-# # RUN echo "-XX:+UseZGC" 																								  >> /etc/elasticsearch/jvm.options
-# RUN echo "-XX:+UseConcMarkSweepGC" 																			              >> /etc/elasticsearch/jvm.options
-# RUN echo "-XX:CMSInitiatingOccupancyFraction=75"															              >> /etc/elasticsearch/jvm.options
-# RUN echo "-XX:+UseCMSInitiatingOccupancyOnly"																              >> /etc/elasticsearch/jvm.options
-# RUN echo "-Des.networkaddress.cache.ttl=60" 																			  >> /etc/elasticsearch/jvm.options
-# RUN echo "-Des.networkaddress.cache.negative.ttl=10" 																	  >> /etc/elasticsearch/jvm.options
-# RUN echo "-XX:+AlwaysPreTouch" 																							  >> /etc/elasticsearch/jvm.options
-# RUN echo "-Xss1m" 																										  >> /etc/elasticsearch/jvm.options
-# RUN echo "-Djava.awt.headless=true" 																					  >> /etc/elasticsearch/jvm.options
-# RUN echo "-Dfile.encoding=UTF-8" 																						  >> /etc/elasticsearch/jvm.options
-# RUN echo "-Djna.nosys=true" 																							  >> /etc/elasticsearch/jvm.options
-# RUN echo "-XX:-OmitStackTraceInFastThrow" 																				  >> /etc/elasticsearch/jvm.options
-# RUN echo "-Dio.netty.noUnsafe=true" 																					  >> /etc/elasticsearch/jvm.options
-# RUN echo "-Dio.netty.noKeySetOptimization=true" 																		  >> /etc/elasticsearch/jvm.options
-# RUN echo "-Dio.netty.recycler.maxCapacityPerThread=0" 																	  >> /etc/elasticsearch/jvm.options
-# RUN echo "-Dio.netty.allocator.numDirectArenas=0" 																		  >> /etc/elasticsearch/jvm.options
-# RUN echo "-Dlog4j.shutdownHookEnabled=false" 																			  >> /etc/elasticsearch/jvm.options
-# RUN echo "-Dlog4j2.disable.jmx=true" 																					  >> /etc/elasticsearch/jvm.options
-# RUN echo "-Djava.io.tmpdir=/tmp" 																				          >> /etc/elasticsearch/jvm.options
-# RUN echo "-XX:+HeapDumpOnOutOfMemoryError" 																				  >> /etc/elasticsearch/jvm.options
-# RUN echo "-XX:HeapDumpPath=/var/lib/elasticsearch" 																		  >> /etc/elasticsearch/jvm.options
-# RUN echo "-XX:ErrorFile=/var/log/elasticsearch/hs_err_pid%p.log" 														  >> /etc/elasticsearch/jvm.options
-# RUN echo "-Xlog:gc*,gc+age=trace,safepoint:file=/var/log/elasticsearch/gc.log:utctime,pid,tags:filecount=32,filesize=64m" >> /etc/elasticsearch/jvm.options
-# RUN echo "-Djava.locale.providers=COMPAT" 																				  >> /etc/elasticsearch/jvm.options
-
+# Settings for JMX/VisualVM profiling. You also have to map the port when running the container.
+RUN echo "-Dcom.sun.management.jmxremote.ssl=false"          >> /etc/elasticsearch/jvm.options
+RUN echo "-Dcom.sun.management.jmxremote.authenticate=false" >> /etc/elasticsearch/jvm.options
+RUN echo "-Dcom.sun.management.jmxremote.local.only=false"   >> /etc/elasticsearch/jvm.options
+RUN echo "-Dcom.sun.management.jmxremote.port=8099"          >> /etc/elasticsearch/jvm.options
+RUN echo "-Dcom.sun.management.jmxremote.rmi.port=8099"      >> /etc/elasticsearch/jvm.options
+RUN echo "-Djava.rmi.server.hostname=localhost"              >> /etc/elasticsearch/jvm.options
+EXPOSE 8099
 
 # Install plugin.
-RUN elasticsearch-plugin install https://github.com/alexklibisz/elastiknn/releases/download/0.1.0-PRE4/elastiknn-0.1.0-PRE4_es7.4.0.zip
+RUN elasticsearch-plugin install https://github.com/alexklibisz/elastiknn/releases/download/0.1.0-PRE6/elastiknn-0.1.0-PRE6_es7.4.0.zip
 
 # Install python client.
 RUN python3 -m pip install --upgrade elastiknn-client==0.1.0rc4
