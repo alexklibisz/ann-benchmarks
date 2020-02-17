@@ -12,3 +12,4 @@ data/*
 .idea
 venv
 elastiknn.zip
+results/*-jaccard
