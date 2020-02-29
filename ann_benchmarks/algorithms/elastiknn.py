@@ -43,10 +43,9 @@ class ElastiKnnExact(BaseANN):
 
 class ElastiKnnLsh(BaseANN):
 
-    def __init__(self, metric, num_shards=1, num_tables: int = 1, num_bands: int = 10, num_rows: int = 2, use_cache: bool = True,
+    def __init__(self, metric, num_shards=1, num_bands: int = 10, num_rows: int = 2, use_cache: bool = True,
                  start_es: bool = False):
-        self._model = ElastiKnnModel(algorithm='lsh', metric=metric,
-                                     algorithm_params=dict(num_tables=num_tables, num_bands=num_bands, num_rows=num_rows))
+        self._model = ElastiKnnModel(algorithm='lsh', metric=metric, algorithm_params=dict(num_bands=num_bands, num_rows=num_rows))
         self.name = 'elastiknn-lsh'
         self.num_shards = num_shards
         self.batch_res = None
@@ -55,7 +54,7 @@ class ElastiKnnLsh(BaseANN):
 
         if start_es:
             from subprocess import run
-            if run("curl localhost:9200", shell=True).returncode != 0:
+            if run("curl -s localhost:9200", shell=True).returncode != 0:
                 print("Starting elasticsearch service...")
                 run("service elasticsearch start", shell=True, check=True)
 

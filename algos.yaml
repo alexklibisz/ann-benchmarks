@@ -626,17 +626,12 @@ bit:
       run-groups:
         base:
           args: [
-            # Number of shards.
-            [14],
-            # Number of tables.
-            [10, 20, 40],
-            # Bands per table.
-            [10, 20],
-            # Rows per band.
-            [1, 2, 3],
-            # Use cache.
-            [true],
-            [true]
+            [1],                    # Number of shards.
+            [10, 50, 90, 130, 170,  # Number of bands.
+             210, 250, 290],
+            [1],                    # Rows per band.
+            [true],                 # Use cache.
+            [true]                  # Start elasticsearch inside the container.
           ]
     bf:
       docker-tag: ann-benchmarks-sklearn
