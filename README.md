@@ -27,6 +27,8 @@ Evaluated
 * [NGT](https://github.com/yahoojapan/NGT): ONNG, PANNG
 * [SPTAG](https://github.com/microsoft/SPTAG)
 * [PUFFINN](https://github.com/puffinn/puffinn)
+* [N2](https://github.com/kakao/n2)
+* [ScaNN](https://github.com/google-research/google-research/tree/master/scann)
 
 Data sets
 =========
@@ -46,11 +48,12 @@ We have a number of precomputed data sets for this. All data sets are pre-split 
 | [MNIST](http://yann.lecun.com/exdb/mnist/)                        |        784 |     60,000 |    10,000 |       100 | Euclidean | [HDF5](http://ann-benchmarks.com/mnist-784-euclidean.hdf5) (217MB)         |
 | [NYTimes](https://archive.ics.uci.edu/ml/datasets/bag+of+words)   |        256 |    290,000 |    10,000 |       100 | Angular   | [HDF5](http://ann-benchmarks.com/nytimes-256-angular.hdf5) (301MB)         |
 | [SIFT](https://corpus-texmex.irisa.fr/)                           |        128 |  1,000,000 |    10,000 |       100 | Euclidean | [HDF5](http://ann-benchmarks.com/sift-128-euclidean.hdf5) (501MB)          |
+| [Last.fm](https://github.com/erikbern/ann-benchmarks/pull/91)     |         65 |    292,385 |    50,000 |       100 | Angular   | [HDF5](http://ann-benchmarks.com/lastfm-64-dot.hdf5) (135MB)               |
 
 Results
 =======
 
-These are all as of 2019-06-10, running all benchmarks on a c5.4xlarge machine on AWS:
+These are all as of 2020-07-12, running all benchmarks on a c5.4xlarge machine on AWS with `--parallelism` set to 3:
 
 glove-100-angular
 -----------------
@@ -67,10 +70,10 @@ fashion-mnist-784-euclidean
 
 ![fashion-mnist-784-euclidean](https://raw.github.com/erikbern/ann-benchmarks/master/results/fashion-mnist-784-euclidean.png)
 
-gist-960-euclidean
+lastfm-64-dot
 ------------------
 
-![gist-960-euclidean](https://raw.github.com/erikbern/ann-benchmarks/master/results/gist-960-euclidean.png)
+![lastfm-64-dot](https://raw.github.com/erikbern/ann-benchmarks/master/results/lastfm-64-dot.png)
 
 nytimes-256-angular
 -------------------
