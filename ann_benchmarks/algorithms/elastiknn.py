@@ -43,9 +43,8 @@ class ElastiKnnExact(BaseANN):
 
 class ElastiKnnLsh(BaseANN):
 
-    def __init__(self, metric, num_shards=1, num_bands: int = 10, num_rows: int = 2, use_cache: bool = True,
-                 start_es: bool = False):
-        self._model = ElastiKnnModel(algorithm='lsh', metric=metric, algorithm_params=dict(num_bands=num_bands, num_rows=num_rows))
+    def __init__(self, metric, num_shards=1, num_bands: int = 10, num_rows: int = 2, use_cache: bool = True, start_es: bool = False):
+        self._model = ElastiKnnModel(algorithm='lsh', metric=metric, n_jobs=1, algorithm_params=dict(num_bands=num_bands, num_rows=num_rows))
         self.name = 'elastiknn-lsh'
         self.num_shards = num_shards
         self.batch_res = None
@@ -68,7 +67,7 @@ class ElastiKnnLsh(BaseANN):
     def query(self, q, n):
         if self._model._sim == SIMILARITY_JACCARD:
             q = SparseBoolVector(total_indices=self._dim, true_indices=q)
-        return self._model.kneighbors([q], n_neighbors=n, return_distance=False, use_cache=self.use_cache)[0]
+        return self._model.kneighbors([q], n_neighbors=n, return_distance=False, use_cache=self.use_cache, allow_missing=True)[0]
 
     def batch_query(self, X, n):
         self.batch_res = self._model.kneighbors(X, n_neighbors=n, return_distance=False, use_cache=self.use_cache)
