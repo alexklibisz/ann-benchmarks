@@ -5,30 +5,47 @@ WORKDIR /home/app
 # Install elasticsearch.
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt install -y wget curl htop
-RUN wget --quiet https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-oss-7.4.0-amd64.deb \
-    && dpkg -i elasticsearch-oss-7.4.0-amd64.deb \
-    && rm elasticsearch-oss-7.4.0-amd64.deb
+RUN wget --quiet https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-oss-7.6.2-amd64.deb \
+    && dpkg -i elasticsearch-oss-7.6.2-amd64.deb \
+    && rm elasticsearch-oss-7.6.2-amd64.deb
 
 # Put ES on the path.
 ENV PATH="/usr/share/elasticsearch/bin:$PATH"
 
-# Add configurations optimized for benchmarking. Setting write and search thread pools to size 1 to negate overhead from
-# switching/managing threads. This leads to some very minor performance improvements.
-RUN echo "thread_pool.search.size: 1" >> /etc/elasticsearch/elasticsearch.yml
-RUN echo "thread_pool.write.size: 1" >> /etc/elasticsearch/elasticsearch.yml
-RUN echo "ES_JAVA_OPTS=\"-Xmx4g\"" >> /etc/default/elasticsearch
+# Configure elasticsearch and JVM for single-node, single-core.
+RUN echo '\
+discovery.type: single-node\n\
+network.host: 0.0.0.0\n\
+node.master: true\n\
+node.data: true\n\
+node.ingest: false\n\
+node.ml: false\n\
+node.processors: 1' > /etc/elasticsearch/elasticsearch.yml
 
-# Settings for JMX/VisualVM profiling. You also have to map the port when running the container.
-RUN echo "-Dcom.sun.management.jmxremote.ssl=false"          >> /etc/elasticsearch/jvm.options
-RUN echo "-Dcom.sun.management.jmxremote.authenticate=false" >> /etc/elasticsearch/jvm.options
-RUN echo "-Dcom.sun.management.jmxremote.local.only=false"   >> /etc/elasticsearch/jvm.options
-RUN echo "-Dcom.sun.management.jmxremote.port=8099"          >> /etc/elasticsearch/jvm.options
-RUN echo "-Dcom.sun.management.jmxremote.rmi.port=8099"      >> /etc/elasticsearch/jvm.options
-RUN echo "-Djava.rmi.server.hostname=localhost"              >> /etc/elasticsearch/jvm.options
-EXPOSE 8099
+RUN echo '\
+-Xms4G\n\
+-Xmx4G\n\
+13-:-XX:+UseG1GC\n\
+13-:-XX:G1ReservePercent=25\n\
+13-:-XX:InitiatingHeapOccupancyPercent=30\n\
+-Djava.io.tmpdir=/tmp\n\
+-XX:+HeapDumpOnOutOfMemoryError\n\
+-XX:HeapDumpPath=data\n\
+-XX:ErrorFile=logs/hs_err_pid%p.log\n\
+9-:-Xlog:gc*,gc+age=trace,safepoint:file=logs/gc.log:utctime,pid,tags:filecount=32,filesize=64m\n\
+-Dcom.sun.management.jmxremote.ssl=false\n\
+-Dcom.sun.management.jmxremote.authenticate=false\n\
+-Dcom.sun.management.jmxremote.local.only=false\n\
+-Dcom.sun.management.jmxremote.port=8097\n\
+-Dcom.sun.management.jmxremote.rmi.port=8097\n\
+-Djava.rmi.server.hostname=localhost' > /etc/elasticsearch/jvm.options
+
+# JMX port. Need to also map the port when running.
+EXPOSE 8097
 
 # Install plugin.
-RUN elasticsearch-plugin install https://github.com/alexklibisz/elastiknn/releases/download/0.1.0-PRE8/elastiknn-0.1.0-PRE8_es7.4.0.zip
+RUN elasticsearch-plugin install --batch \
+    https://github.com/alexklibisz/elastiknn/releases/download/0.1.0-PRE31/elastiknn-0.1.0-PRE31_es7.6.2.zip
 
 # Install python client.
-RUN python3 -m pip install --upgrade elastiknn-client==0.1.0rc8
+RUN python3 -m pip install --upgrade elastiknn-client==0.1.0rc31
