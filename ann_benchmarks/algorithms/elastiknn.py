@@ -14,44 +14,45 @@ class ElastiknnWrapper(BaseANN):
     # Some development notes:
     #  To install a local copy of the elastiknn client: pip install --upgrade -e ../elastiknn/client-python/
 
-    def __init__(self, algorithm: str, metric: str, mapping_params: dict, query_params: dict):
+    def __init__(self, metric: str, dimension: int, algorithm: str, mapping_params: dict = {}, query_params: dict = {}):
+        self.name = f"eknn-{algorithm}-{metric}"
+        self._dim = dimension
         self._metric = metric
-        self._logger = Logger("Elastiknn")
-        self._logger.info(f"algorithm [{algorithm}], metric [{metric}], mapping_params [{mapping_params}], query_params [{query_params}]")
+        print(f"metric [{metric}], dimension [{dimension}], algorithm [{algorithm}], mapping_params [{mapping_params}], query_params [{query_params}]")
 
-        # Attempt to start elasticsearch, assuming running in image built from Dockerfile.elastiknn.
-        if run("curl -s localhost:9200", shell=True).returncode != 0:
+        # Check if Elasticsearch is running. Start it if not, assuming running in image built from Dockerfile.elastiknn.
+        if run("curl -s -I localhost:9200", shell=True).returncode != 0:
             print("Starting elasticsearch service...")
             run("service elasticsearch start", shell=True, check=True)
 
-        self._model = ElastiknnModel(algorithm=algorithm, metric=metric, mapping_params=mapping_params, query_params=query_params)
+        # algos.yaml is not specific to datasets, which can have different dimensions, so `k` is expressed as a
+        # proportion of the dimension (`p`) and then converted to an int (`k`).
+        if algorithm == 'permutation_lsh' and 'p' in mapping_params:
+            mapping_params['k'] = int(dimension * mapping_params['p'])
+            del mapping_params['p']
 
-        self._dim = None        # Defined in fit().
+        self._model = ElastiknnModel(algorithm=algorithm, metric=metric, mapping_params=mapping_params, query_params=query_params)
         self._batch_res = None  # Defined in batch_query().
 
-    @staticmethod
-    def _fix_sparse(X):
+    def _fix_sparse(self, X):
         # ann-benchmarks represents a sparse matrix as a list of lists of indices.
-        dim = max(map(max, X)) + 1
-        return dim, [Vec.SparseBool(x, dim) for x in X]
+        return [Vec.SparseBool(x, self._dim) for x in X]
 
     def fit(self, X):
         if self._metric in {'jaccard', 'hamming'}:
-            self._dim, X = ElastiknnWrapper._fix_sparse(X)
-        else:
-            self._dim = X.shape[-1]
+            X = self._fix_sparse(X)
         return self._model.fit(X, shards=1)
 
     def query(self, q, n):
         if self._metric in {'jaccard', 'hamming'}:
-            _, X = ElastiknnWrapper._fix_sparse([q])
+            X = self._fix_sparse([q])
         else:
             X = np.expand_dims(q, 0)
         return self._model.kneighbors(X, n_neighbors=n, return_similarity=False, allow_missing=True)[0]
 
     def batch_query(self, X, n):
         if self._metric in {'jaccard', 'hamming'}:
-            _, X = ElastiknnWrapper._fix_sparse(X)
+            X = self._fix_sparse(X)
         self._batch_res = self._model.kneighbors(X, n_neighbors=n, return_similarity=False, allow_missing=True)
 
     def get_batch_results(self):

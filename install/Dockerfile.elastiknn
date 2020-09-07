@@ -13,7 +13,7 @@ RUN wget --quiet https://artifacts.elastic.co/downloads/elasticsearch/elasticsea
 ENV PATH="/usr/share/elasticsearch/bin:$PATH"
 
 # Install python client.
-RUN python3 -m pip install --upgrade elastiknn-client==0.1.0rc31.dev595
+RUN python3 -m pip install --upgrade elastiknn-client==0.1.0rc31.dev597
 
 # Install plugin.
 RUN elasticsearch-plugin install --batch \

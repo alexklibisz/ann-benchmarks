@@ -6,8 +6,6 @@ import os
 import re
 import traceback
 
-import pdb
-
 
 def get_algorithm_name(name, batch_mode):
     if batch_mode:

@@ -110,7 +110,7 @@ function""" % (definition.module, definition.constructor, definition.arguments)
 
     D = get_dataset(dataset)
     X_train = numpy.array(D['train'])
-    X_test = numpy.array(D['test'])
+    X_test = numpy.array(D['test'][:500])
     distance = D.attrs['distance']
     print('got a train set of size (%d * %d)' % X_train.shape)
     print('got %d queries' % len(X_test))
@@ -233,7 +233,8 @@ def run_docker(definition, dataset, count, runs, timeout, batch, cpu_limit,
         },
         cpuset_cpus=cpu_limit,
         mem_limit=mem_limit,
-        detach=True)
+        detach=True
+    )
 
     def stream_logs():
         for line in container.logs(stream=True):
