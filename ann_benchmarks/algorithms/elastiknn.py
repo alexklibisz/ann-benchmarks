@@ -20,7 +20,7 @@ class ElastiknnWrapper(BaseANN):
         self._logger.info(f"algorithm [{algorithm}], metric [{metric}], mapping_params [{mapping_params}], query_params [{query_params}]")
 
         # Attempt to start elasticsearch, assuming running in image built from Dockerfile.elastiknn.
-        if run("curl localhost:9200", shell=True).returncode != 0:
+        if run("curl -s localhost:9200", shell=True).returncode != 0:
             print("Starting elasticsearch service...")
             run("service elasticsearch start", shell=True, check=True)
 
