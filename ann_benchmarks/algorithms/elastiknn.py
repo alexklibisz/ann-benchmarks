@@ -1,76 +1,58 @@
-from elastiknn.elastiknn_pb2 import SIMILARITY_JACCARD, SparseBoolVector
-from elastiknn.models import ElastiKnnModel
+from logging import Logger
+
+import numpy as np
+from elastiknn.api import Vec
+from elastiknn.models import ElastiknnModel
 
 from ann_benchmarks.algorithms.base import BaseANN
 
+from subprocess import run
 
-class ElastiKnnExact(BaseANN):
 
-    def __init__(self, metric, num_shards=1, use_cache: bool = True, start_es: bool = False):
-        self._model = ElastiKnnModel(algorithm='exact', metric=metric)
-        self.name = 'elastiknn-exact'
-        self.num_shards = num_shards
-        self.batch_res = None
-        self.use_cache = use_cache
-        self._dim = None
+class ElastiknnWrapper(BaseANN):
 
-        print(f"Running {self.name} with metric {metric} and {num_shards} shards")
+    # Some development notes:
+    #  To install a local copy of the elastiknn client: pip install --upgrade -e ../elastiknn/client-python/
 
-        if start_es:
-            from subprocess import run
-            if run("curl localhost:9200", shell=True).returncode != 0:
-                print("Starting elasticsearch service...")
-                run("service elasticsearch start", shell=True, check=True)
+    def __init__(self, algorithm: str, metric: str, mapping_params: dict, query_params: dict):
+        self._metric = metric
+        self._logger = Logger("Elastiknn")
+        self._logger.info(f"algorithm [{algorithm}], metric [{metric}], mapping_params [{mapping_params}], query_params [{query_params}]")
+
+        # Attempt to start elasticsearch, assuming running in image built from Dockerfile.elastiknn.
+        if run("curl localhost:9200", shell=True).returncode != 0:
+            print("Starting elasticsearch service...")
+            run("service elasticsearch start", shell=True, check=True)
+
+        self._model = ElastiknnModel(algorithm=algorithm, metric=metric, mapping_params=mapping_params, query_params=query_params)
+
+        self._dim = None        # Defined in fit().
+        self._batch_res = None  # Defined in batch_query().
+
+    @staticmethod
+    def _fix_sparse(X):
+        # ann-benchmarks represents a sparse matrix as a list of lists of indices.
+        dim = max(map(max, X)) + 1
+        return dim, [Vec.SparseBool(x, dim) for x in X]
 
     def fit(self, X):
-        # ann-benchmarks represents a sparse matrix as a list of lists of indices.
-        if self._model._sim == SIMILARITY_JACCARD:
-            self._dim = max(map(max, X)) + 1
-            X = [SparseBoolVector(total_indices=self._dim, true_indices=x) for x in X]
-        return self._model.fit(X, recreate_index=True, shards=self.num_shards)
+        if self._metric in {'jaccard', 'hamming'}:
+            self._dim, X = ElastiknnWrapper._fix_sparse(X)
+        else:
+            self._dim = X.shape[-1]
+        return self._model.fit(X, shards=1)
 
     def query(self, q, n):
-        if self._model._sim == SIMILARITY_JACCARD:
-            q = SparseBoolVector(total_indices=self._dim, true_indices=q)
-        return self._model.kneighbors([q], n_neighbors=n, return_distance=False, use_cache=self.use_cache)[0]
+        if self._metric in {'jaccard', 'hamming'}:
+            _, X = ElastiknnWrapper._fix_sparse([q])
+        else:
+            X = np.expand_dims(q, 0)
+        return self._model.kneighbors(X, n_neighbors=n, return_similarity=False, allow_missing=True)[0]
 
     def batch_query(self, X, n):
-        self.batch_res = self._model.kneighbors(X, n_neighbors=n, return_distance=False, use_cache=self.use_cache)
+        if self._metric in {'jaccard', 'hamming'}:
+            _, X = ElastiknnWrapper._fix_sparse(X)
+        self._batch_res = self._model.kneighbors(X, n_neighbors=n, return_similarity=False, allow_missing=True)
 
     def get_batch_results(self):
-        return self.batch_res
-
-
-class ElastiKnnLsh(BaseANN):
-
-    def __init__(self, metric, num_shards=1, num_bands: int = 10, num_rows: int = 2, use_cache: bool = True, start_es: bool = False):
-        self._model = ElastiKnnModel(algorithm='lsh', metric=metric, n_jobs=1, algorithm_params=dict(num_bands=num_bands, num_rows=num_rows))
-        self.name = 'elastiknn-lsh'
-        self.num_shards = num_shards
-        self.batch_res = None
-        self.use_cache = use_cache
-        self._dim = None
-
-        if start_es:
-            from subprocess import run
-            if run("curl -s localhost:9200", shell=True).returncode != 0:
-                print("Starting elasticsearch service...")
-                run("service elasticsearch start", shell=True, check=True)
-
-    def fit(self, X):
-        # ann-benchmarks represents a sparse matrix as a list of lists of indices.
-        if self._model._sim == SIMILARITY_JACCARD:
-            self._dim = max(map(max, X)) + 1
-            X = [SparseBoolVector(total_indices=self._dim, true_indices=x) for x in X]
-        return self._model.fit(X, recreate_index=True, shards=self.num_shards)
-
-    def query(self, q, n):
-        if self._model._sim == SIMILARITY_JACCARD:
-            q = SparseBoolVector(total_indices=self._dim, true_indices=q)
-        return self._model.kneighbors([q], n_neighbors=n, return_distance=False, use_cache=self.use_cache, allow_missing=True)[0]
-
-    def batch_query(self, X, n):
-        self.batch_res = self._model.kneighbors(X, n_neighbors=n, return_distance=False, use_cache=self.use_cache)
-
-    def get_batch_results(self):
-        return self.batch_res
+        return self._batch_res

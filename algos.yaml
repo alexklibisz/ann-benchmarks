@@ -554,11 +554,15 @@ float:
     elastiknn-exact:
       docker-tag: ann-benchmarks-elastiknn
       module: ann_benchmarks.algorithms.elastiknn
-      constructor: ElastiKnnExact
-      base-args: ["@metric"]
+      constructor: ElastiknnWrapper
+      base-args: ["exact", "@metric"]
       run-groups:
         base:
-          args: [[1], [true]]
+          args: [{}, {}]
+#    elastiknn-permutation-lsh:
+#      docker-tag: ann-benchmarks-elastiknn
+#      module: ann_benchmarks.algorithms.elastiknn
+
 bit:
   hamming:
     mih:
