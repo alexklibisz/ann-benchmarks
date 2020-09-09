@@ -29,7 +29,6 @@ def knn(dataset_distances, run_distances, count, metrics, epsilon=1e-3):
     if 'knn' not in metrics:
         print('Computing knn metrics')
         knn_metrics = metrics.create_group('knn')
-        import pdb; pdb.set_trace()
         mean, std, recalls = get_recall_values(dataset_distances,
                                                run_distances, count,
                                                knn_threshold, epsilon)

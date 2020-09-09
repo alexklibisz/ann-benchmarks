@@ -15,7 +15,7 @@ class ElastiknnWrapper(BaseANN):
     #  To install a local copy of the elastiknn client: pip install --upgrade -e ../elastiknn/client-python/
 
     def __init__(self, metric: str, dimension: int, algorithm: str, mapping_params: dict = {}, query_params: dict = {}):
-        self.name = f"eknn-{algorithm}-{metric}"
+        self.name = f"eknn-{algorithm}-{metric}-{ElastiknnWrapper._dict_to_str(mapping_params)}-{ElastiknnWrapper._dict_to_str(query_params)}"
         self._dim = dimension
         self._metric = metric
         print(f"metric [{metric}], dimension [{dimension}], algorithm [{algorithm}], mapping_params [{mapping_params}], query_params [{query_params}]")
@@ -33,6 +33,9 @@ class ElastiknnWrapper(BaseANN):
 
         self._model = ElastiknnModel(algorithm=algorithm, metric=metric, mapping_params=mapping_params, query_params=query_params)
         self._batch_res = None  # Defined in batch_query().
+
+    def _dict_to_str(d: dict) -> str:
+        return '-'.join([f"{k}_{v}" for k, v in d.items()])
 
     def _fix_sparse(self, X):
         # ann-benchmarks represents a sparse matrix as a list of lists of indices.

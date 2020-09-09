@@ -448,8 +448,8 @@ float:
         lsh:
           args:
             - "lsh"
-            - - { "L": 50, "k": 3, "r": 1 }
-            - - { "candidates": 5000, "probes": 3 }
+            - - { "L": 100, "k": 2, "r": 120 }
+            - - { "candidates": 4000, "probes": 3 }
 
 
   angular:
