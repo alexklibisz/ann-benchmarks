@@ -3,6 +3,7 @@ from logging import Logger
 import numpy as np
 from elastiknn.api import Vec
 from elastiknn.models import ElastiknnModel
+from elastiknn.utils import dealias_metric
 
 from ann_benchmarks.algorithms.base import BaseANN
 
@@ -32,7 +33,8 @@ class ElastiknnWrapper(BaseANN):
             del mapping_params['p']
 
         self._model = ElastiknnModel(algorithm=algorithm, metric=metric, mapping_params=mapping_params, query_params=query_params)
-        self._batch_res = None  # Defined in batch_query().
+        self._batch_res = None          # Defined in batch_query().
+        self._transform = lambda x: x   # Defined in fit().
 
     def _dict_to_str(d: dict) -> str:
         return '-'.join([f"{k}_{v}" for k, v in d.items()])
@@ -43,20 +45,22 @@ class ElastiknnWrapper(BaseANN):
 
     def fit(self, X):
         if self._metric in {'jaccard', 'hamming'}:
-            X = self._fix_sparse(X)
-        return self._model.fit(X, shards=1)
+            self._transform = self._fix_sparse()
+        elif self._metric in {'euclidean'}:
+            self._transform = lambda X_: X_ / X.max()
+        return self._model.fit(self._transform(X), shards=1)
 
     def query(self, q, n):
         if self._metric in {'jaccard', 'hamming'}:
             X = self._fix_sparse([q])
         else:
             X = np.expand_dims(q, 0)
-        return self._model.kneighbors(X, n_neighbors=n, return_similarity=False, allow_missing=True)[0]
+        return self._model.kneighbors(self._transform(X), n_neighbors=n, return_similarity=False)[0]
 
     def batch_query(self, X, n):
         if self._metric in {'jaccard', 'hamming'}:
             X = self._fix_sparse(X)
-        self._batch_res = self._model.kneighbors(X, n_neighbors=n, return_similarity=False, allow_missing=True)
+        self._batch_res = self._model.kneighbors(X, n_neighbors=n, return_similarity=False)
 
     def get_batch_results(self):
         return self._batch_res

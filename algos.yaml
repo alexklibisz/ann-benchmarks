@@ -445,11 +445,32 @@ float:
       constructor: ElastiknnWrapper
       base-args: [ "@metric", "@dimension"]
       run-groups:
-        lsh:
+#        lsh0_21:
+#          args:
+#            - "lsh"
+#            - - { "L": 50, "k": 3, "r": 160 }
+#            - - { "candidates": 5000, "probes": 0 }
+#        lsh_0_38:
+#          args:
+#            - "lsh"
+#            - - { "L": 75, "k": 3, "r": 200 }
+#            - - { "candidates": 5000, "probes": 0 }
+#        lsh_0_53:
+#          args:
+#            - "lsh"
+#            - - { "L": 50, "k": 3, "r": 180 }
+#            - - { "candidates": 5000, "probes": 3 }
+#        lsh_0_66:
+#          args:
+#            - "lsh"
+#            - - { "L": 50, "k": 3, "r": 220 }
+#            - - { "candidates": 5000, "probes": 3 }
+        lsh_0_66:
           args:
             - "lsh"
-            - - { "L": 100, "k": 2, "r": 120 }
-            - - { "candidates": 4000, "probes": 3 }
+            - - { "L": 100, "k": 2, "r": 1 }
+            - - { "candidates": 5000, "probes": 3 }
+
 
 
   angular:
