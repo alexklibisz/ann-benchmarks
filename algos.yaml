@@ -338,14 +338,14 @@ float:
           args: ["@count"]
           query-args: [[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.85, 0.9,
                         0.925, 0.95, 0.97, 0.98, 0.99, 0.995]]
-#    elastiknn:
-#      docker-tag: ann-benchmarks-elastiknn
-#      module: ann_benchmarks.algorithms.elastiknn
-#      constructor: ElastiknnWrapper
-#      base-args: [ "@metric", "@dimension" ]
-#      run-groups:
-#        exact:
-#          args: [ "exact", {}, {} ]
+    elastiknn-exact:
+      docker-tag: ann-benchmarks-elastiknn
+      module: ann_benchmarks.algorithms.elastiknn
+      constructor: Exact
+      base-args: [ "@metric", "@dimension" ]
+      run-groups:
+        exact:
+          args: []
   euclidean:
     kgraph:
       docker-tag: ann-benchmarks-kgraph
@@ -439,7 +439,7 @@ float:
             - {"n_neighbors": [40, 80], "diversify_epsilon": [0.0, 1.0],
                "pruning_degree_multiplier":[2.0, 2.5], "leaf_size": 64}
           query-args: [[0.0, 0.04, 0.08, 0.12, 0.16, 0.20, 0.24, 0.28, 0.32]]
-    elastiknn-lsh:
+    elastiknn-l2lsh:
       docker-tag: ann-benchmarks-elastiknn
       module: ann_benchmarks.algorithms.elastiknn
       constructor: L2Lsh
@@ -449,37 +449,10 @@ float:
           args:
             - [50, 75, 100, 125]
             - [2, 3, 6, 8]
-            - [3, 5, 7]
+            - [1, 3, 6, 7]
           query-args:
             - [500, 1000]
-            - [0, 3, 5, 7, 9, 10]
-#        lsh0_21:
-#          args:
-#            - "lsh"
-#            - - { "L": 50, "k": 3, "r": 160 }
-#            - - { "candidates": 5000, "probes": 0 }
-#        lsh_0_38:
-#          args:
-#            - "lsh"
-#            - - { "L": 75, "k": 3, "r": 200 }
-#            - - { "candidates": 5000, "probes": 0 }
-#        lsh_0_53:
-#          args:
-#            - "lsh"
-#            - - { "L": 50, "k": 3, "r": 180 }
-#            - - { "candidates": 5000, "probes": 3 }
-#        lsh_0_66:
-#          args:
-#            - "lsh"
-#            - - { "L": 50, "k": 3, "r": 220 }
-#            - - { "candidates": 5000, "probes": 3 }
-#        lsh_0_66:
-#          args:
-#            - "lsh"
-#            - - { "L": 100, "k": 2, "r": 1 }
-#            - - { "candidates": 5000, "probes": 3 }
-
-
+            - [0, 3, 5, 7, 9]
 
   angular:
     puffinn:
@@ -601,16 +574,6 @@ float:
         scann3:
           args: [[1000], [.2], [1]]
           query-args: [[[9, 25], [11, 35], [12, 35], [13, 35], [14, 40], [15, 40], [16, 40], [17, 45], [20, 45], [20, 55], [25, 55], [25, 70], [30, 70], [40, 90], [50, 100], [60, 120], [70, 140]]]
-#    elastiknn-permutation-lsh:
-#      docker-tag: ann-benchmarks-elastiknn
-#      module: ann_benchmarks.algorithms.elastiknn
-#      constructor: ElastiknnWrapper
-#      base-args: ["@metric", "@dimension", "permutation_lsh"]
-#      run-groups:
-#        plsh:
-#          args:
-#            - - { "p": 0.4, repeating: false }
-#            - - { "candidates": 5000 }
 
 bit:
   hamming:
@@ -712,29 +675,6 @@ bit:
           args: [[32,64,128,256,512,1024,2048,4096,8192]]
           query-args: [[1, 5, 10, 50, 100, 200]]
   jaccard:
-    elastiknn-exact:
-      docker-tag: ann-benchmarks-elastiknn
-      module: ann_benchmarks.algorithms.elastiknn
-      constructor: ElastiKnnExact
-      base-args: ["@metric"]
-      run-groups:
-        base:
-          args: [[1], [true], [true]]
-    elastiknn-lsh:
-      docker-tag: ann-benchmarks-elastiknn
-      module: ann_benchmarks.algorithms.elastiknn
-      constructor: ElastiKnnLsh
-      base-args: ["@metric"]
-      run-groups:
-        base:
-          args: [
-            [1],                    # Number of shards.
-            [10, 50, 90, 130, 170,  # Number of bands.
-             210, 250, 290],
-            [1],                    # Rows per band.
-            [true],                 # Use cache.
-            [true]                  # Start elasticsearch inside the container.
-          ]
     bf:
       docker-tag: ann-benchmarks-sklearn
       module: ann_benchmarks.algorithms.bruteforce
