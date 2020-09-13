@@ -219,7 +219,10 @@ def run_docker(definition, dataset, count, runs, timeout, batch, cpu_limit,
     if mem_limit is None:
         mem_limit = psutil.virtual_memory().available
 
-    print('Creating container: CPU limit %s, mem limit %s, timeout %d, command %s' % (cpu_limit, mem_limit, timeout, cmd))
+    from uuid import uuid4
+    uuid = str(uuid4())
+
+    print('Creating container: CPU limit %s, mem limit %s, timeout %d, command %s, uuid %s' % (cpu_limit, mem_limit, timeout, cmd, uuid))
     container = client.containers.run(
         definition.docker_tag,
         cmd,
@@ -230,6 +233,8 @@ def run_docker(definition, dataset, count, runs, timeout, batch, cpu_limit,
                 {'bind': '/home/app/data', 'mode': 'ro'},
             os.path.abspath('results'):
                 {'bind': '/home/app/results', 'mode': 'rw'},
+            os.path.abspath(f"/tmp/ann-benchmarks-{uuid}"):
+                {'bind': '/var/log/elasticsearch', 'mode': 'rw'}
         },
         cpuset_cpus=cpu_limit,
         mem_limit=mem_limit,
@@ -249,7 +254,7 @@ def run_docker(definition, dataset, count, runs, timeout, batch, cpu_limit,
         # Exit if exit code
         if exit_code not in [0, None]:
             print(colors.color(container.logs().decode(), fg='red'))
-            print('Child process raised exception %d' % exit_code)
+            print('Child process with uuid %s raised exception %d' % (uuid, exit_code))
     except:
         print('Container.wait failed with exception')
         traceback.print_exc()

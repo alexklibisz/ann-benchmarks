@@ -32,7 +32,9 @@ node.processors: 1\n\
 thread_pool.write.size: 1\n\
 thread_pool.search.size: 1\n\
 thread_pool.search.queue_size: 1\n\
-' >> /etc/elasticsearch/elasticsearch.yml
+path.data: /var/lib/elasticsearch\n\
+path.logs: /var/log/elasticsearch\n\
+' > /etc/elasticsearch/elasticsearch.yml
 
 RUN echo '\
 -Xms4G\n\
@@ -58,5 +60,5 @@ EXPOSE 8097
 RUN service elasticsearch start && service elasticsearch stop
 
 # Custom entrypoint that also starts the Elasticsearch server.\
-RUN echo 'service elasticsearch start && python3 -u run_algorithm.py "$@"' > entrypoint.sh
+RUN echo 'chown -R elasticsearch:elasticsearch /var/log/elasticsearch && service elasticsearch start && python3 -u run_algorithm.py "$@"' > entrypoint.sh
 ENTRYPOINT ["/bin/bash", "/home/app/entrypoint.sh"]
