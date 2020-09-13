@@ -35,8 +35,8 @@ thread_pool.search.queue_size: 1\n\
 ' >> /etc/elasticsearch/elasticsearch.yml
 
 RUN echo '\
--Xms4G\n\
--Xmx4G\n\
+-Xms2800m\n\
+-Xmx2800m\n\
 -XX:+UseG1GC\n\
 -XX:G1ReservePercent=25\n\
 -XX:InitiatingHeapOccupancyPercent=30\n\
