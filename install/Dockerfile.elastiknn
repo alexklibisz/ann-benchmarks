@@ -56,3 +56,7 @@ EXPOSE 8097
 
 # Make sure you can start the service.
 RUN service elasticsearch start && service elasticsearch stop
+
+# Custom entrypoint that also starts the Elasticsearch server.\
+RUN echo 'service elasticsearch start && python3 -u run_algorithm.py "$@"' > entrypoint.sh
+ENTRYPOINT ["/bin/bash", "/home/app/entrypoint.sh"]
