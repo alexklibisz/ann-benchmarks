@@ -28,7 +28,11 @@ discovery.type: single-node\n\
 network.host: 0.0.0.0\n\
 node.master: true\n\
 node.data: true\n\
-node.processors: 1' >> /etc/elasticsearch/elasticsearch.yml
+node.processors: 1\n\
+thread_pool.write.size: 1\n\
+thread_pool.search.size: 1\n\
+thread_pool.search.queue_size: 1\n\
+' >> /etc/elasticsearch/elasticsearch.yml
 
 RUN echo '\
 -Xms4G\n\
