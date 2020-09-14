@@ -4,6 +4,7 @@ Uses the elastiknn python client
 To install a local copy of the client, run `pip install --upgrade -e /path/to/elastiknn/client-python/`
 To monitor the Elasticsearch JVM using Visualvm, add `ports={ "8097": 8097 }` to the `containers.run` call in runner.py.
 """
+from urllib.error import URLError
 
 import numpy as np
 from elastiknn.api import Vec
@@ -12,13 +13,23 @@ from elastiknn.utils import dealias_metric
 
 from ann_benchmarks.algorithms.base import BaseANN
 
-from subprocess import run
+from urllib.request import Request, urlopen
+from time import sleep
 
 
-def start_es():
-    if run("curl -s -I localhost:9200", shell=True).returncode != 0:
-        print("Starting elasticsearch service...")
-        run("service elasticsearch start", shell=True, check=True)
+def es_wait():
+    print("Waiting for elasticsearch health endpoint...")
+    req = Request("http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=1s")
+    for i in range(30):
+        try:
+            res = urlopen(req)
+            if res.getcode() == 200:
+                print("Elasticsearch is ready")
+                return
+        except URLError:
+            pass
+        sleep(1)
+    raise RuntimeError("Failed to connec to local elasticsearch")
 
 
 class Exact(BaseANN):
@@ -28,7 +39,7 @@ class Exact(BaseANN):
         self.metric = metric
         self.dimension = dimension
         self.model = ElastiknnModel("exact", dealias_metric(metric))
-        start_es()
+        es_wait()
 
     def _handle_sparse(self, X):
         # convert list of lists of indices to sparse vectors.
@@ -51,11 +62,11 @@ class L2Lsh(BaseANN):
 
     def __init__(self, L: int, k: int, w: int):
         self.name_prefix = f"eknn-l2lsh-L={L}-k={k}-w={w}"
-        self.name = None   # set based on query args.
+        self.name = None  # set based on query args.
         self.model = ElastiknnModel("lsh", "l2", mapping_params=dict(L=L, k=k, w=w))
         self.X_max = 1.0
         self.query_params = dict()
-        start_es()
+        es_wait()
 
     def fit(self, X):
         self.X_max = X.max()
@@ -67,6 +78,3 @@ class L2Lsh(BaseANN):
 
     def query(self, q, n):
         return self.model.kneighbors(np.expand_dims(q, 0) / self.X_max, n, query_params=self.query_params)[0]
-
-
-
