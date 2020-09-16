@@ -37,8 +37,8 @@ path.logs: /var/log/elasticsearch\n\
 ' > /etc/elasticsearch/elasticsearch.yml
 
 RUN echo '\
--Xms4G\n\
--Xmx4G\n\
+-Xms3G\n\
+-Xmx3G\n\
 -XX:+UseG1GC\n\
 -XX:G1ReservePercent=25\n\
 -XX:InitiatingHeapOccupancyPercent=30\n\
