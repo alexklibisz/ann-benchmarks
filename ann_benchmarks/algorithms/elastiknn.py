@@ -39,6 +39,7 @@ class Exact(BaseANN):
         self.metric = metric
         self.dimension = dimension
         self.model = ElastiknnModel("exact", dealias_metric(metric))
+        self.batch_res = None
         es_wait()
 
     def _handle_sparse(self, X):
@@ -57,6 +58,15 @@ class Exact(BaseANN):
         else:
             return self.model.kneighbors(np.expand_dims(q, 0), n)[0]
 
+    def batch_query(self, X, n):
+        if self.metric in {'jaccard', 'hamming'}:
+            self.batch_res = self.model.kneighbors(self._handle_sparse(X), n)
+        else:
+            self.batch_res = self.model.kneighbors(X, n)
+
+    def get_batch_results(self):
+        return self.batch_res
+
 
 class L2Lsh(BaseANN):
 
@@ -66,6 +76,7 @@ class L2Lsh(BaseANN):
         self.model = ElastiknnModel("lsh", "l2", mapping_params=dict(L=L, k=k, w=w))
         self.X_max = 1.0
         self.query_params = dict()
+        self.batch_res = None
         es_wait()
 
     def fit(self, X):
@@ -78,3 +89,9 @@ class L2Lsh(BaseANN):
 
     def query(self, q, n):
         return self.model.kneighbors(np.expand_dims(q, 0) / self.X_max, n, query_params=self.query_params)[0]
+
+    def batch_query(self, X, n):
+        self.batch_res = self.model.kneighbors(X, n)
+
+    def get_batch_results(self):
+        return self.batch_res
