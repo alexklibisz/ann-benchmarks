@@ -531,6 +531,45 @@ float:
           arg-groups:
             - {"M": 48,  "efConstruction": 500}
           query-args: [[10, 20, 40, 80, 120, 200, 400, 600, 800]]
+    lucenehnsw:
+      docker-tag: ann-benchmarks-lucenehnsw
+      module: ann_benchmarks.algorithms.lucene
+      constructor: LuceneHnsw
+      base-args: ["@metric", "@dimension"]
+      run-groups:
+        M-4:
+          arg-groups:
+            - {"M": 32,  "efConstruction": 100}
+          query-args: [[100]]
+        # M-4:
+        #   arg-groups:
+        #     - {"M": 4,  "efConstruction": 500}
+        #   query-args: [[10, 20, 40, 80, 120, 200, 400, 600, 800]]
+        # M-8:
+        #   arg-groups:
+        #     - {"M": 8,  "efConstruction": 500}
+        #   query-args: [[10, 20, 40, 80, 120, 200, 400, 600, 800]]
+        # M-12:
+        #   arg-groups:
+        #     - {"M": 12,  "efConstruction": 500}
+        #   query-args: [[10, 20, 40, 80, 120, 200, 400, 600, 800]]
+        # M-16:
+        #   arg-groups:
+        #     - {"M": 16,  "efConstruction": 500}
+        #   query-args: [[10, 20, 40, 80, 120, 200, 400, 600, 800]]
+        # M-24:
+        #   arg-groups:
+        #     - {"M": 24,  "efConstruction": 500}
+        #   query-args: [[10, 20, 40, 80, 120, 200, 400, 600, 800]]
+        # M-36:
+        #   arg-groups:
+        #     - {"M": 36,  "efConstruction": 500}
+        #   query-args: [[10, 20, 40, 80, 120, 200, 400, 600, 800]]
+        # M-48:
+        #   arg-groups:
+        #     - {"M": 48,  "efConstruction": 500}
+        #   query-args: [[10, 20, 40, 80, 120, 200, 400, 600, 800]]
+
 
   angular:
     puffinn:
@@ -707,7 +746,16 @@ float:
           arg-groups:
             - {"M": 48,  "efConstruction": 500}
           query-args: [[10, 20, 40, 80, 120, 200, 400, 600, 800]]
-
+    lucenehnsw:
+      docker-tag: ann-benchmarks-lucenehnsw
+      module: ann_benchmarks.algorithms.lucene
+      constructor: LuceneHnsw
+      base-args: ["@metric", "@dimension"]
+      run-groups:
+        M-4:
+          arg-groups:
+            - {"M": 32,  "efConstruction": 100}
+          query-args: [[100]]
 bit:
   hamming:
     mih:

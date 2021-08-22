@@ -1,0 +1,21 @@
+FROM ann-benchmarks
+
+WORKDIR /home/app
+
+# Install Openjdk and misc.
+RUN apt-get update -y
+RUN apt-get install -y openjdk-11-jdk
+RUN apt-get install -y wget
+
+# Python dependencies.
+RUN python3 -m pip install requests==2.25.1
+
+# Download server application.
+RUN wget --quiet https://github.com/alexklibisz/ann-benchmarks-lucene/releases/download/v0.0.6/ann-benchmarks-lucene.jar -O server.jar
+
+# Setup entrypoint script.
+RUN touch entrypoint.sh
+RUN echo 'export LOG_LEVEL=DEBUG' >> entrypoint.sh
+RUN echo 'nohup java -Xms4G -Xmx4G -jar server.jar lucenehnsw &' >> entrypoint.sh
+RUN echo 'python3 -u run_algorithm.py "$@"' >> entrypoint.sh
+ENTRYPOINT ["/bin/bash", "/home/app/entrypoint.sh"]
