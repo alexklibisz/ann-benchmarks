@@ -10,7 +10,7 @@ from urllib.error import URLError
 import numpy as np
 from elastiknn.api import Vec
 from elastiknn.models import ElastiknnModel
-from elastiknn.utils import dealias_metric
+from elastiknn.utils import *
 
 from ann_benchmarks.algorithms.base import BaseANN
 
@@ -67,9 +67,9 @@ class Exact(BaseANN):
 
     def batch_query(self, X, n):
         if self.metric in {'jaccard', 'hamming'}:
-            self.batch_res = self.model.kneighbors(self._handle_sparse(X), n)
+            self.batch_res = self.kneighbors(self._handle_sparse(X), n)
         else:
-            self.batch_res = self.model.kneighbors(X, n)
+            self.batch_res = self.kneighbors(X, n)
 
     def get_batch_results(self):
         return self.batch_res
@@ -84,8 +84,9 @@ class L2Lsh(BaseANN):
         self.X_max = 1.0
         self.query_params = dict()
         self.batch_res = None
-        self.sum_query_dur = 0
         self.num_queries = 0
+        self.total_duration_client = 0
+        self.total_duration_server = 0
         es_wait()
 
     def fit(self, X):
@@ -102,19 +103,57 @@ class L2Lsh(BaseANN):
         self.model.set_query_params(dict(candidates=candidates, probes=probes))
         # Reset the counters.
         self.num_queries = 0
-        self.sum_query_dur = 0
+        self.total_duration_client = 0
+        self.total_duration_server = 0
+
+    # Copied from elastiknn client-python (client.py, models.py) to add some timing to 
+    # measure overhead of HTTP client/server model.
+    def kneighbors(self, X, n_neighbors: int):
+        inds = np.zeros((len(X), n_neighbors), dtype=np.int32) - 1
+        v = next(canonical_vectors_to_elastiknn(X))
+        query = self.model._query.with_vec(v)
+        body = {
+            "query": {
+                "elastiknn_nearest_neighbors": query.to_dict()
+            }
+        }
+        # Start a timer immediately before making the Elasticsearch client call.
+        t0 = perf_counter()
+        res = self.model._eknn.es.search(
+            index=self.model._index,
+            body=body,
+            size=n_neighbors,
+            _source=False,
+            docvalue_fields=self.model._stored_id_field,
+            stored_fields="_none_",
+            filter_path=[f'hits.hits.fields.{self.model._stored_id_field}', 'took']
+        )
+        # Stop the timer immediately after to measure the query time from ann-benchmarks' perspective.
+        duration_client = perf_counter() - t0
+        # Use the "took" value from Elasticsearch to measure the query time from Elasticsearch's perspective.
+        duration_server = res['took'] / 1000.0 # Divide by 1000 for millis -> seconds conversion.
+        # Note that building the results is not measured in the query time.
+        hits = res['hits']['hits']
+        for j, hit in enumerate(hits):
+            inds[0][j] = int(hit['fields'][self.model._stored_id_field][0]) - 1  # Subtract one from id because 0 is an invalid id in ES.   
+        return inds[0], duration_client, duration_server
 
     def query(self, q, n):
         # If QPS after 100 queries is < 10, this setting is bad and won't complete within the default timeout.
-        if self.num_queries > 100 and self.num_queries / self.sum_query_dur < 10:
+        if self.num_queries > 100 and self.num_queries / self.total_duration_client < 10:
             print("Throughput after 100 queries is less than 10 q/s. Terminating to avoid wasteful computation.", flush=True)
             exit(0)
         else:
             t0 = perf_counter()
-            res = self.model.kneighbors(np.expand_dims(q, 0) / self.X_max, n)[0]
-            dur = (perf_counter() - t0)
-            self.sum_query_dur += dur
+            res, duration_client, duration_server = self.kneighbors(np.expand_dims(q, 0) / self.X_max, n)
+            duration_client = (perf_counter() - t0)
             self.num_queries += 1
+            self.total_duration_client += duration_client
+            self.total_duration_server += duration_server
+            if self.num_queries % 1000 == 0:
+                print(f"Total duration client = {round(self.total_duration_client)} seconds")
+                print(f"Total duration server = {round(self.total_duration_server)} seconds")
+                print(f"Overhead = {round((self.total_duration_client - self.total_duration_server) * 100.0 / self.total_duration_client)} percent")
             return res
 
     def batch_query(self, X, n):

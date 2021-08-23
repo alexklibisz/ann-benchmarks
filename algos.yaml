@@ -572,12 +572,12 @@ float:
       run-groups:
         elastiknn-lsh:
           args:
-          - [50, 75, 100]
-          - [3, 4]
-          - [1, 3, 7]
+          - [75]
+          - [4]
+          - [7]
           query-args:
-          - [1000, 10000]
-          - [0, 6]
+          - [1000]
+          - [3]
     opensearchknn:
       docker-tag: ann-benchmarks-opensearchknn
       module: ann_benchmarks.algorithms.opensearchknn
