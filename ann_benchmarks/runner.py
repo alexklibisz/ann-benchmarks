@@ -228,6 +228,7 @@ def run_docker(definition, dataset, count, runs, timeout, batch, cpu_limit,
     if mem_limit is None:
         mem_limit = psutil.virtual_memory().available
 
+    print(f"Running with cmd {cmd}")
     container = client.containers.run(
         definition.docker_tag,
         cmd,

@@ -43,15 +43,23 @@ def store_results(dataset, count, definition, query_arguments, attrs, results,
 
 
 def load_all_results(dataset=None, count=None, batch_mode=False):
-    for root, _, files in os.walk(get_result_filename(dataset, count)):
+    fn = get_result_filename(dataset, count)
+    for root, _, files in os.walk(fn):
         for fn in files:
             if os.path.splitext(fn)[-1] != '.hdf5':
                 continue
             try:
                 f = h5py.File(os.path.join(root, fn), 'r+')
                 properties = dict(f.attrs)
+                if len(properties) == 0:
+                    properties['batch_mode'] = False
+                    properties['algo'] = 'elastiknn-l2lsh'
+                    properties['name'] = 'elastiknn-l2lsh'
+                    properties['count'] = 100
+                    properties['best_search_time'] = 99.0
                 if batch_mode != properties['batch_mode']:
                     continue
+                print(f)
                 yield properties, f
                 f.close()
             except:
@@ -62,6 +70,6 @@ def load_all_results(dataset=None, count=None, batch_mode=False):
 def get_unique_algorithms():
     algorithms = set()
     for batch_mode in [False, True]:
-        for properties, _ in load_all_results(batch_mode=batch_mode):
+        for properties, f in load_all_results(batch_mode=batch_mode):
             algorithms.add(properties['algo'])
     return algorithms
