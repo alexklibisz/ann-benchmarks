@@ -12,6 +12,9 @@ RUN wget -qO - https://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public | a
 RUN mkdir /opt/app
 WORKDIR /opt/app
 #ADD https://github.com/alexklibisz/elastiknn/releases/download/elastiknn-ann-benchmarks%2Fbuild%2Flibs%2Fann-benchmarks-7.14.0.0.jar/ann-benchmarks-7.14.0.0-all.jar /opt/app/ann-benchmarks.jar
+
+ARG dummy
+RUN echo $dummy > /dev/null
 ADD ann-benchmarks-7.14.0.0-all.jar ann-benchmarks.jar
 RUN jar -xf /opt/app/ann-benchmarks.jar hdf5_set_attrs.py && ls hdf5_set_attrs.py
 

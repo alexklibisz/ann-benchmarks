@@ -51,15 +51,8 @@ def load_all_results(dataset=None, count=None, batch_mode=False):
             try:
                 f = h5py.File(os.path.join(root, fn), 'r+')
                 properties = dict(f.attrs)
-                if len(properties) == 0:
-                    properties['batch_mode'] = False
-                    properties['algo'] = 'elastiknn-l2lsh'
-                    properties['name'] = 'elastiknn-l2lsh'
-                    properties['count'] = 100
-                    properties['best_search_time'] = 99.0
                 if batch_mode != properties['batch_mode']:
                     continue
-                print(f)
                 yield properties, f
                 f.close()
             except:

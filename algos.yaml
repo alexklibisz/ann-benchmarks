@@ -572,7 +572,7 @@ float:
       run-groups:
         elastiknn-lsh:
           args:
-          - [75]
+          - [50]
           - [2]
           - [6]
           query-args:
