@@ -108,7 +108,3 @@ jobs:
         python3 -m unittest test/test-metrics.py
         python3 -m unittest test/test-jaccard.py
         python3 create_website.py --outputdir . --scatter --latex
-
-      env:
-        LIBRARY: ${{ matrix.library }}
-        DATASET: ${{ matrix.dataset }}
