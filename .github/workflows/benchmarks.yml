@@ -77,20 +77,21 @@ jobs:
             dataset: random-xs-20-angular
       fail-fast: false
 
+    env:
+      LIBRARY: ${{ matrix.library }}
+      DATASET: ${{ matrix.dataset }}
+
     steps:
     - uses: actions/checkout@v2 # Pull the repository
 
-    - name: Install various apt packages
+    - name: Install OS Dependencies
       run: sudo apt-get install -y libhdf5-dev python3-numpy python3-scipy python3-matplotlib python3-sklearn
 
-    - name: Install dependencies
-      run: |
-        pip3 install -r requirements.txt
-        python3 install.py
+    - name: Install Project Dependencies
+      run: pip3 install -r requirements.txt
 
-      env:
-        LIBRARY: ${{ matrix.library }}
-        DATASET: ${{ matrix.dataset }}
+    - name: Build Library Docker Image
+      run: python3 install.py
     
     - name: Run the benchmark
       run: |
