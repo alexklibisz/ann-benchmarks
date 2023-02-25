@@ -19,7 +19,7 @@ RUN mv elasticsearch-* elasticsearch && rm elasticsearch.tar.gz
 
 # Install plugin.
 RUN /home/elasticsearch/elasticsearch/bin/elasticsearch-plugin install --batch \
-    https://github.com/alexklibisz/elastiknn/releases/download/8.6.2.0/elastiknn-8.6.2.0.zip
+    https://github.com/alexklibisz/elastiknn/releases/download/8.6.2.0-PR496-SNAPSHOT/elastiknn-8.6.2.0.zip
 
 # Configuration
 # Backup the original configurations, which can be useful for comparing.
@@ -38,9 +38,11 @@ thread_pool.write.size: 1\n\
 thread_pool.search.size: 1\n\
 thread_pool.search.queue_size: 1\n\
 xpack.security.enabled: false\n\
+elastiknn.jdk-incubator-vector.enabled: true\n\
 ' > elasticsearch/config/elasticsearch.yml
 
 RUN echo '\
+--add-modules=jdk.incubator.vector\n\
 -Xms3G\n\
 -Xmx3G\n\
 -XX:+UseG1GC\n\
@@ -74,7 +76,7 @@ RUN python3 -m pip install elasticsearch==8.6.2 dataclasses-json==0.3.7 tqdm==4.
 # Custom entrypoint that also starts the Elasticsearch server in the background
 RUN echo '\
 set -e\n\
-su - elasticsearch -c "nohup /home/elasticsearch/elasticsearch/bin/elasticsearch > nohup.out &"\n\
-python3 -u run_algorithm.py "$@" || (cat nohup.out && exit 1)\n\
+su - elasticsearch -c "nohup /home/elasticsearch/elasticsearch/bin/elasticsearch > /tmp/nohup.out &"\n\
+python3 -u run_algorithm.py "$@" || (cat /tmp/nohup.out && exit 1)\n\
 ' > /home/app/entrypoint.sh
 ENTRYPOINT ["/bin/bash", "/home/app/entrypoint.sh"]
