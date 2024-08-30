@@ -214,6 +214,8 @@ function"""
 
     X_train, X_test, distance = load_and_transform_dataset(dataset_name)
 
+    logger = logging.getLogger("run")
+
     try:
         if hasattr(algo, "supports_prepared_queries"):
             algo.supports_prepared_queries()
@@ -223,20 +225,21 @@ function"""
         query_argument_groups = definition.query_argument_groups or [[]]  # Ensure at least one iteration
 
         for pos, query_arguments in enumerate(query_argument_groups, 1):
-            print(f"Running query argument group {pos} of {len(query_argument_groups)}...")
+            logger.info(f"Running query argument group {pos} of {len(query_argument_groups)}...")
             if query_arguments:
                 algo.set_query_arguments(*query_arguments)
-            
-            descriptor, results = run_individual_query(algo, X_train, X_test, distance, count, run_count, batch)
-
-            descriptor.update({
-                "build_time": build_time,
-                "index_size": index_size,
-                "algo": definition.algorithm,
-                "dataset": dataset_name
-            })
-
-            store_results(dataset_name, count, definition, query_arguments, descriptor, results, batch)
+            try:
+                descriptor, results = run_individual_query(algo, X_train, X_test, distance, count, run_count, batch)
+                descriptor.update({
+                    "build_time": build_time,
+                    "index_size": index_size,
+                    "algo": definition.algorithm,
+                    "dataset": dataset_name
+                })
+                store_results(dataset_name, count, definition, query_arguments, descriptor, results, batch)
+            except Exception as ex:
+                logger.warning(f"Caught exception: {ex}")
+                pass
     finally:
         algo.done()
 

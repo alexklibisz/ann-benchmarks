@@ -91,11 +91,9 @@ class L2Lsh(BaseANN):
         # https://github.com/erikbern/ann-benchmarks/issues/178
         self.sum_query_dur = 0
         self.num_queries = 0
-        self.give_up = False
         es_wait()
 
     def fit(self, X):
-        self.give_up = False
         print(f"{self.name_prefix}: indexing {len(X)} vectors")
         res = self.model.fit(X, shards=1)
         print(f"{self.name_prefix}: finished indexing {len(X)} vectors")
@@ -107,30 +105,21 @@ class L2Lsh(BaseANN):
         self.name = f"{self.name_prefix}_candidates={candidates}_probes={probes}"
         self.model.set_query_params(dict(candidates=candidates, probes=probes))
         # Reset the counters.
-        self.give_up = False
         self.num_queries = 0
         self.sum_query_dur = 0
 
     def query(self, q, n):
-
-        if self.give_up:
-            return []
-        else:
-            t0 = perf_counter()
-            res = self.model.kneighbors(np.expand_dims(q, 0), n, return_similarity=False)[0]
-            dur = perf_counter() - t0
-
-            # Maintain state and figure out if we should give up.
-            self.sum_query_dur += dur
-            self.num_queries += 1
-            if self.num_queries > 500 and self.num_queries / self.sum_query_dur < 50:
-                print("Throughput after 500 queries is less than 50 q/s. Giving up to avoid wasteful computation.")
-                self.give_up = True
-            elif res[-2:].sum() < 0:
-                print(f"Model returned fewer than {n} neighbors. Giving up to avoid wasteful computation.")
-                self.give_up = True
-
-            return res
+        t0 = perf_counter()
+        res = self.model.kneighbors(np.expand_dims(q, 0), n, return_similarity=False)[0]
+        dur = perf_counter() - t0
+        # Maintain state and figure out if we should give up.
+        self.sum_query_dur += dur
+        self.num_queries += 1
+        if self.num_queries > 500 and self.num_queries / self.sum_query_dur < 50:
+            raise Exception("Throughput after 500 queries is less than 50 q/s. Giving up to avoid wasteful computation.")
+        elif res[-2:].sum() < 0:
+            raise Exception(f"Model returned fewer than {n} neighbors. Giving up to avoid wasteful computation.")
+        return res
 
     def batch_query(self, X, n):
         self.batch_res = self.model.kneighbors(X, n)
